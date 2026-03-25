@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>售后问题解答</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a1a;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
+      color: #fff;
+      padding: 18px 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 12px rgba(22, 119, 255, 0.35);
+    }
+    .header-title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Search bar */
+    .search-bar { position: relative; margin-bottom: 12px; }
+    .search-bar input {
+      width: 100%;
+      height: 40px;
+      padding: 0 42px 0 40px;
+      border: none;
+      border-radius: 20px;
+      background: #fff;
+      font-size: 14px;
+      color: #333;
+      outline: none;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .search-bar input::placeholder { color: #bbb; }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      color: #bbb;
+      pointer-events: none;
+    }
+    .clear-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 22px;
+      color: #bbb;
+      cursor: pointer;
+      display: none;
+      padding: 4px;
+      line-height: 1;
+    }
+
+    /* Category tabs */
+    .cats-scroll {
+      display: flex;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 12px;
+      gap: 8px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .cats-scroll::-webkit-scrollbar { display: none; }
+    .cat-btn {
+      flex-shrink: 0;
+      padding: 5px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s, color 0.15s;
+    }
+    .cat-btn.active {
+      background: #fff;
+      color: #1677ff;
+      font-weight: 600;
+      border-color: #fff;
+    }
+
+    /* ── Main ─────────────────────────────────────────── */
+    .main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 14px 12px 60px;
+    }
+    .result-hint {
+      font-size: 12px;
+      color: #aaa;
+      padding: 0 4px 8px;
+    }
+
+    /* ── FAQ Card ─────────────────────────────────────── */
+    .faq-card {
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    .faq-q {
+      display: flex;
+      align-items: flex-start;
+      padding: 13px 14px;
+      cursor: pointer;
+      gap: 10px;
+      user-select: none;
+    }
+    .faq-q-content { flex: 1; min-width: 0; }
+    .faq-cat-badge {
+      display: inline-block;
+      font-size: 11px;
+      color: #1677ff;
+      background: #e8f3ff;
+      border-radius: 8px;
+      padding: 1px 8px;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    .faq-q-text {
+      font-size: 15px;
+      font-weight: 500;
+      color: #222;
+      line-height: 1.5;
+    }
+    .faq-tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 5px;
+    }
+    .faq-tag-item {
+      font-size: 11px;
+      color: #999;
+      background: #f5f5f5;
+      padding: 1px 7px;
+      border-radius: 6px;
+    }
+    .faq-arrow {
+      color: #ccc;
+      font-size: 12px;
+      margin-top: 4px;
+      flex-shrink: 0;
+      transition: transform 0.25s, color 0.25s;
+    }
+    .faq-card.open .faq-arrow {
+      transform: rotate(180deg);
+      color: #1677ff;
+    }
+
+    /* Answer panel */
+    .faq-panel {
+      display: none;
+      border-top: 1px solid #f3f3f3;
+      animation: slideDown 0.2s ease;
+    }
+    .faq-card.open .faq-panel { display: block; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .faq-answer {
+      padding: 14px 14px 8px;
+      font-size: 14px;
+      color: #444;
+      line-height: 1.85;
+      white-space: pre-wrap;
+    }
+    .faq-answer strong { color: #222; font-weight: 600; }
+
+    .faq-imgs {
+      padding: 0 14px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .faq-imgs img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      display: block;
+      cursor: zoom-in;
+    }
+
+    .faq-video-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 2px 14px 10px;
+      padding: 10px 14px;
+      background: #f0f7ff;
+      border-radius: 8px;
+      color: #1677ff;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .faq-video-btn::before {
+      content: '🎬';
+      font-size: 16px;
+    }
+
+    /* Feedback section */
+    .feedback-trigger-row {
+      padding: 4px 14px 14px;
+    }
+    .trigger-btn {
+      width: 100%;
+      padding: 9px 12px;
+      background: none;
+      border: 1.5px dashed #e0e0e0;
+      border-radius: 8px;
+      color: #999;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .trigger-btn:active,
+    .trigger-btn:hover {
+      border-color: #1677ff;
+      color: #1677ff;
+      background: #f5f9ff;
+    }
+
+    .feedback-form-section {
+      display: none;
+      padding: 0 14px 16px;
+    }
+    .feedback-form-section.open { display: block; }
+
+    /* ── Form ─────────────────────────────────────────── */
+    .f-group { margin-bottom: 10px; }
+    .f-group label {
+      display: block;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .f-group input,
+    .f-group textarea {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid #e4e4e4;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #333;
+      outline: none;
+      font-family: inherit;
+      -webkit-appearance: none;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+    .f-group input:focus,
+    .f-group textarea:focus {
+      border-color: #1677ff;
+      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+    }
+    .f-group textarea {
+      resize: vertical;
+      min-height: 85px;
+      line-height: 1.6;
+    }
+    .f-bot-check {
+      position: absolute;
+      left: -9999px;
+      opacity: 0;
+      height: 0;
+    }
+    .f-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .f-btn-cancel {
+      flex: 1;
+      padding: 10px;
+      background: none;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      color: #888;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .f-btn-submit {
+      flex: 2;
+      padding: 10px;
+      background: #1677ff;
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .f-btn-submit:active { background: #0958d9; }
+    .f-btn-submit:disabled { background: #91caff; cursor: not-allowed; }
+
+    .f-sent-msg {
+      display: none;
+      text-align: center;
+      padding: 14px;
+      font-size: 14px;
+      color: #52c41a;
+      background: #f6ffed;
+      border: 1px solid #b7eb8f;
+      border-radius: 8px;
+      margin-top: 4px;
+    }
+    .f-warn {
+      font-size: 12px;
+      color: #fa8c16;
+      margin-top: 8px;
+      text-align: center;
+      background: #fff7e6;
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+
+    /* ── No Results ─────────────────────────────────────── */
+    .no-results { display: none; padding: 28px 0 16px; }
+    .no-results.show { display: block; }
+
+    .no-results-header { text-align: center; margin-bottom: 20px; }
+    .no-results-header .icon { font-size: 44px; }
+    .no-results-header h3 {
+      font-size: 16px;
+      color: #555;
+      margin: 10px 0 5px;
+    }
+    .no-results-header p {
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+    .clear-link {
+      font-size: 13px;
+      color: #1677ff;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .no-results-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    .no-results-card h4 {
+      font-size: 15px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* ── Loading / Error ─────────────────────────────────── */
+    .app-loading, .app-error {
+      text-align: center;
+      padding: 60px 20px;
+      color: #bbb;
+      font-size: 14px;
+    }
+    .app-error { color: #ff4d4f; }
+    .app-error small {
+      display: block;
+      color: #ccc;
+      font-size: 12px;
+      margin-top: 10px;
+      line-height: 1.8;
+    }
+
+    /* ── Lightbox ─────────────────────────────────────────── */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .lightbox.show { display: flex; }
+    .lightbox img {
+      max-width: 100%;
+      max-height: 92vh;
+      border-radius: 6px;
+      display: block;
+    }
+    .lb-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      color: #fff;
+      font-size: 30px;
+      cursor: pointer;
+      line-height: 1;
+      opacity: 0.7;
+    }
+    .lb-close:hover { opacity: 1; }
+
+    /* Keyword highlight */
+    mark {
+      background: #ffe58f;
+      color: inherit;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    @media (min-width: 640px) {
+      .header { padding: 20px 20px 0; }
+      .header-title { font-size: 19px; }
+      .main { padding: 16px 20px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="header-title">🔧 售后问题解答</div>
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input type="search" id="searchInput"
+           placeholder="输入关键词搜索，如：没声音、蓝牙…" autocomplete="off">
+    <span class="clear-icon" id="clearIcon" onclick="clearSearch()">×</span>
+  </div>
+  <div class="cats-scroll" id="catContainer">
+    <!-- 分类标签由 JS 渲染 -->
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+  <div class="result-hint" id="resultHint"></div>
+
+  <div id="faqContainer">
+    <div class="app-loading">⏳ 加载中…</div>
+  </div>
+
+  <!-- 无搜索结果状态 -->
+  <div class="no-results" id="noResults">
+    <div class="no-results-header">
+      <div class="icon">🔎</div>
+      <h3>没有找到相关问题</h3>
+      <p>换个关键词试试，或者直接告诉我们你的问题</p>
+      <span class="clear-link" onclick="clearSearch()">← 清除搜索重试</span>
+    </div>
+    <div class="no-results-card">
+      <h4>📝 告诉我们你的问题</h4>
+      <div id="noResultsFormWrap">
+        <!-- 表单由 JS 渲染 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LIGHTBOX ===== -->
+<div class="lightbox" id="lightbox">
+  <span class="lb-close" id="lbClose">×</span>
+  <img id="lbImg" src="" alt="图片预览">
+</div>
+
+<script>
+// ================================================================
+// 【配置区域 — 上线前请修改这里】
+// ================================================================
+//
+// 邮件通知配置（使用 Formspree 免费服务）：
+// 步骤：
+//   1. 前往 https://formspree.io 用 whaha373w@gmail.com 注册账号
+//   2. 点击 "+ New Form"，填写表单名称，创建后复制表单 ID（如 xpwzjkla）
+//   3. 将下面引号里的 YOUR_FORM_ID 替换为你的表单 ID
+//
+const FORMSPREE_ID = 'YOUR_FORM_ID';
+// ================================================================
+
+const FORM_ACTION = FORMSPREE_ID !== 'YOUR_FORM_ID'
+  ? `https://formspree.io/f/${FORMSPREE_ID}`
+  : null;
+
+let faqData = [];
+let categories = [];
+let currentCat = '全部';
+let currentKw  = '';
+
+// ── 初始化 ────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const res = await fetch('./data.json?v=' + Date.now());
+    if (!res.ok) throw new Error(res.status);
+    const json = await res.json();
+    faqData    = json.faqs       || [];
+    categories = ['全部', ...(json.categories || [])];
+    renderCats();
+    render();
+  } catch (err) {
+    document.getElementById('faqContainer').innerHTML = `
+      <div class="app-error">
+        ⚠️ 数据加载失败，请刷新页面重试。
+        <small>
+          如果是在电脑本地直接打开 HTML 文件测试，<br>
+          请在 VS Code 安装扩展 "Live Server"，<br>
+          右键 index.html → "Open with Live Server" 打开。<br>
+          上传到 GitHub Pages 后直接访问链接即可正常运行。
+        </small>
+      </div>`;
+  }
+}
+
+// ── 分类标签 ──────────────────────────────────────────────────────
+function renderCats() {
+  document.getElementById('catContainer').innerHTML = categories
+    .map(c => `<span class="cat-btn${c === currentCat ? ' active' : ''}" data-cat="${esc(c)}">${esc(c)}</span>`)
+    .join('');
+}
+
+// ── 渲染 FAQ 列表 ─────────────────────────────────────────────────
+function render() {
+  const kw       = currentKw.toLowerCase();
+  const filtered = faqData.filter(f => {
+    const catOk = currentCat === '全部' || f.category === currentCat;
+    const kwOk  = !kw
+      || f.question.toLowerCase().includes(kw)
+      || f.answer.toLowerCase().includes(kw)
+      || (f.tags || []).some(t => t.toLowerCase().includes(kw));
+    return catOk && kwOk;
+  });
+
+  const container = document.getElementById('faqContainer');
+  const noResults = document.getElementById('noResults');
+  const hint      = document.getElementById('resultHint');
+
+  if (filtered.length === 0) {
+    container.innerHTML = '';
+    noResults.classList.add('show');
+    hint.textContent = '';
+    renderNoResultsForm();
+  } else {
+    noResults.classList.remove('show');
+    hint.textContent = (kw || currentCat !== '全部')
+      ? `找到 ${filtered.length} 条相关问题`
+      : `共 ${filtered.length} 条问题`;
+    container.innerHTML = filtered.map(buildCard).join('');
+  }
+}
+
+// ── 构建 FAQ 卡片 HTML ────────────────────────────────────────────
+function buildCard(f) {
+  const tags = (f.tags || [])
+    .map(t => `<span class="faq-tag-item">${esc(t)}</span>`)
+    .join('');
+  const imgs = (f.images || []).filter(Boolean)
+    .map(src => `<img src="${esc(src)}" data-src="${esc(src)}" alt="操作示意图">`)
+    .join('');
+  const videoHtml = f.video
+    ? `<a class="faq-video-btn" href="${esc(f.video)}" target="_blank">观看操作视频演示</a>`
+    : '';
+
+  return `
+<div class="faq-card" data-id="${f.id}">
+  <div class="faq-q">
+    <div class="faq-q-content">
+      <span class="faq-cat-badge">${esc(f.category)}</span>
+      <div class="faq-q-text">${hl(f.question)}</div>
+      <div class="faq-tags-row">${tags}</div>
+    </div>
+    <span class="faq-arrow">▼</span>
+  </div>
+  <div class="faq-panel">
+    <div class="faq-answer">${fmt(f.answer)}</div>
+    ${imgs ? `<div class="faq-imgs">${imgs}</div>` : ''}
+    ${videoHtml}
+    <div class="feedback-trigger-row">
+      <button class="trigger-btn" data-id="${f.id}">😕 看完还是没解决？点击反馈</button>
+    </div>
+    <div class="feedback-form-section" id="ff-${f.id}">
+      ${buildForm('f-' + f.id, esc(f.question), true)}
+    </div>
+  </div>
+</div>`;
+}
+
+// ── 构建反馈表单 HTML ─────────────────────────────────────────────
+function buildForm(formId, relatedQuestion, showCancel) {
+  const cancelBtn = showCancel
+    ? `<button type="button" class="f-btn-cancel" onclick="cancelFeedback(this)">取消</button>`
+    : '';
+  const warnHtml = !FORM_ACTION
+    ? `<p class="f-warn">⚠️ 请先在 index.html 顶部配置 Formspree ID，才能启用邮件通知</p>`
+    : '';
+  return `
+<form id="form-${formId}" onsubmit="submitForm(event,'${formId}')">
+  <input type="text" name="_gotcha" class="f-bot-check" tabindex="-1" autocomplete="off">
+  <input type="hidden" name="related_question" value="${relatedQuestion}">
+  <div class="f-group">
+    <label>姓名 / 昵称</label>
+    <input type="text" name="name" placeholder="请输入你的称呼" required maxlength="50">
+  </div>
+  <div class="f-group">
+    <label>联系方式（微信号或手机号）</label>
+    <input type="text" name="contact" placeholder="方便我们联系你" required maxlength="50">
+  </div>
+  <div class="f-group">
+    <label>问题描述</label>
+    <textarea name="message"
+      placeholder="请详细说明问题，例如：设备型号、出现的现象、已尝试过哪些方法…"
+      required maxlength="500"></textarea>
+  </div>
+  <div class="f-actions">
+    ${cancelBtn}
+    <button type="submit" class="f-btn-submit" id="sbtn-${formId}">📨 提交问题</button>
+  </div>
+  <div class="f-sent-msg" id="sent-${formId}">✅ 已收到你的问题，我们会尽快联系你！</div>
+  ${warnHtml}
+</form>`;
+}
+
+// ── 无结果区域表单 ────────────────────────────────────────────────
+function renderNoResultsForm() {
+  document.getElementById('noResultsFormWrap').innerHTML =
+    buildForm('no-results', esc(currentKw || '未指定关键词'), false);
+}
+
+// ── 表单提交 ──────────────────────────────────────────────────────
+async function submitForm(e, formId) {
+  e.preventDefault();
+
+  if (!FORM_ACTION) {
+    alert(
+      '⚠️ 表单服务尚未配置。\n\n' +
+      '请在 index.html 顶部将 YOUR_FORM_ID 替换为你的 Formspree 表单 ID。\n' +
+      '注册地址：https://formspree.io'
+    );
+    return;
+  }
+
+  const form    = document.getElementById('form-' + formId);
+  const btn     = document.getElementById('sbtn-' + formId);
+  const sentMsg = document.getElementById('sent-' + formId);
+
+  btn.disabled    = true;
+  btn.textContent = '提交中…';
+
+  try {
+    const res = await fetch(FORM_ACTION, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { Accept: 'application/json' }
+    });
+    if (!res.ok) throw new Error(res.status);
+    form.style.display    = 'none';
+    sentMsg.style.display = 'block';
+  } catch {
+    btn.disabled    = false;
+    btn.textContent = '📨 提交问题';
+    alert('提交失败，请检查网络后重试。');
+  }
+}
+
+// ── 取消反馈 ──────────────────────────────────────────────────────
+function cancelFeedback(btn) {
+  const section    = btn.closest('.feedback-form-section');
+  const triggerRow = section ? section.previousElementSibling : null;
+  if (section)    section.classList.remove('open');
+  if (triggerRow) triggerRow.style.display = '';
+}
+
+// ── 灯箱（图片放大） ─────────────────────────────────────────────
+function openLightbox(src) {
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ── 工具函数 ──────────────────────────────────────────────────────
+
+/** HTML 转义，防止注入 */
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/** 高亮搜索关键词 */
+function hl(text) {
+  const escaped = esc(text);
+  if (!currentKw) return escaped;
+  const safeKw = esc(currentKw).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return escaped.replace(new RegExp(safeKw, 'gi'), m => `<mark>${m}</mark>`);
+}
+
+/** 格式化答案文本（支持 **粗体**、⚠️ 警告行、关键词高亮） */
+function fmt(text) {
+  let html = esc(text);
+  // **粗体**
+  html = html.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+  // ⚠️ 警告行变橙色
+  html = html.replace(/(⚠️[^\n]+)/g, '<span style="color:#fa8c16">$1</span>');
+  // 搜索关键词高亮
+  if (currentKw) {
+    const safeKw = esc(currentKw).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    html = html.replace(new RegExp(safeKw, 'gi'), m => `<mark>${m}</mark>`);
+  }
+  return html;
+}
+
+// ── 事件委托（统一处理所有点击） ─────────────────────────────────
+document.addEventListener('click', function (e) {
+  // 分类标签
+  const catBtn = e.target.closest('.cat-btn[data-cat]');
+  if (catBtn) {
+    currentCat = catBtn.dataset.cat;
+    renderCats();
+    render();
+    return;
+  }
+
+  // FAQ 标题点击展开/收起
+  const faqQ = e.target.closest('.faq-q');
+  if (faqQ) {
+    const card   = faqQ.closest('.faq-card');
+    const isOpen = card.classList.contains('open');
+    card.classList.toggle('open');
+    // 关闭时重置反馈表单状态
+    if (isOpen) {
+      const ff  = card.querySelector('.feedback-form-section');
+      const row = card.querySelector('.feedback-trigger-row');
+      if (ff)  ff.classList.remove('open');
+      if (row) row.style.display = '';
+    }
+    return;
+  }
+
+  // 反馈触发按钮
+  const triggerBtn = e.target.closest('.trigger-btn[data-id]');
+  if (triggerBtn) {
+    const id      = triggerBtn.dataset.id;
+    const section = document.getElementById('ff-' + id);
+    const row     = triggerBtn.closest('.feedback-trigger-row');
+    if (section) {
+      section.classList.add('open');
+      if (row) row.style.display = 'none';
+      section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    return;
+  }
+
+  // 图片点击放大
+  const imgEl = e.target.closest('img[data-src]');
+  if (imgEl) {
+    openLightbox(imgEl.dataset.src);
+    return;
+  }
+
+  // 灯箱关闭
+  if (e.target.id === 'lightbox' || e.target.id === 'lbClose') {
+    closeLightbox();
+  }
+});
+
+// 搜索框输入
+document.getElementById('searchInput').addEventListener('input', function () {
+  currentKw = this.value.trim();
+  document.getElementById('clearIcon').style.display = currentKw ? 'block' : 'none';
+  render();
+});
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  currentKw = '';
+  document.getElementById('clearIcon').style.display = 'none';
+  render();
+}
+
+// ── 启动 ──────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
