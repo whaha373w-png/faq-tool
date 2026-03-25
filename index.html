@@ -405,6 +405,78 @@
       border-radius: 8px;
       border: 1px solid rgba(185,80,0,0.15);
     }
+    .f-tip {
+      font-size: 12px;
+      color: #75777e;
+      margin: 3px 0 6px;
+      line-height: 1.5;
+    }
+    .file-upload-zone {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border: 2px dashed rgba(78,94,128,0.35);
+      border-radius: 12px;
+      background: #f5f7fa;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .file-upload-zone:active {
+      border-color: #1A2B4A;
+      background: #edf0f7;
+    }
+    .fuz-icon { font-size: 22px; flex-shrink: 0; }
+    .fuz-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #2e3a52;
+    }
+    .fuz-sub {
+      font-size: 11px;
+      color: #9ea1aa;
+      margin-top: 2px;
+    }
+    .file-preview-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .fp-item {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .fp-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .fp-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      font-size: 13px;
+      line-height: 20px;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+    }
 
     /* ── No Results ─────────────────────────────────────── */
     .no-results { display: none; padding: 24px 0 16px; }
@@ -1173,6 +1245,8 @@ function clearSearch() {
 
 // ── 全屏反馈页 ───────────────────────────────────────────────────
 function openFeedbackPage(relatedQ) {
+  // 清空上次留下的图片缓存
+  _fbImages.length = 0;
   const wrap = document.getElementById('fbFormWrap');
   wrap.innerHTML = buildFbForm(relatedQ || '');
   document.getElementById('fbPage').classList.add('show');
@@ -1211,12 +1285,21 @@ function buildFbForm(relatedQ) {
       required maxlength="1000" style="min-height:120px"></textarea>
   </div>
   <div class="f-group">
-    <label>图片链接（可选）</label>
-    <input type="url" name="image_url" placeholder="将图片上传到图床后，把链接粘贴于此" maxlength="500">
+    <label>上传图片（可选，最多 3 张）</label>
+    <label class="file-upload-zone" for="fb-img-input">
+      <span class="fuz-icon">📷</span>
+      <div>
+        <div class="fuz-text">拍照 / 从相册选取</div>
+        <div class="fuz-sub">点击此处，手机将弹出相机 / 相册</div>
+      </div>
+    </label>
+    <input type="file" id="fb-img-input" accept="image/*" multiple style="display:none" onchange="previewFbImages(this)">
+    <div class="file-preview-strip" id="fb-img-preview"></div>
   </div>
   <div class="f-group">
-    <label>视频操作步骤链接（可选）</label>
-    <input type="url" name="video_url" placeholder="微信视频号 / 抖音 / 其他平台分享链接" maxlength="500">
+    <label>视频链接（可选）</label>
+    <p class="f-tip">📹 录好视频后 → 发到微信 / 抖音 / 视频号 → 点击"转发"/"分享" → 复制链接，粘贴到下方</p>
+    <input type="url" name="video_url" placeholder="粘贴视频分享链接（微信 / 抖音 / YouTube 等）" maxlength="500">
   </div>
   <div class="f-actions" style="margin-top:18px">
     <button type="button" class="f-btn-cancel" onclick="closeFeedbackPage()">取消</button>
@@ -1225,6 +1308,67 @@ function buildFbForm(relatedQ) {
   <div class="f-sent-msg" id="sent-fb">✅ 已收到你的反馈，我们会尽快联系你！</div>
   ${warnHtml}
 </form>`;
+}
+
+// ── 图片预览（手机拍照/相册选取后显示缩略图） ────────────────────────────────
+const _fbImages = []; // { file, dataUrl }
+
+function previewFbImages(input) {
+  const preview = document.getElementById('fb-img-preview');
+  const files = Array.from(input.files);
+  // 超出3张限制时截断
+  const remaining = 3 - _fbImages.length;
+  files.slice(0, remaining).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const idx = _fbImages.length;
+      _fbImages.push({ file, dataUrl: e.target.result });
+      const item = document.createElement('div');
+      item.className = 'fp-item';
+      item.dataset.idx = idx;
+      item.innerHTML = `<img src="${e.target.result}" alt="预览图"><button class="fp-remove" onclick="removeFbImage(${idx})">✕</button>`;
+      preview.appendChild(item);
+    };
+    reader.readAsDataURL(file);
+  });
+  // 已满3张则隐藏上传区
+  if (_fbImages.length >= 3) {
+    const zone = document.querySelector('label.file-upload-zone');
+    if (zone) zone.style.display = 'none';
+  }
+  // 重置 input，允许重复选同一张
+  input.value = '';
+}
+
+function removeFbImage(idx) {
+  _fbImages[idx] = null;
+  const strip = document.getElementById('fb-img-preview');
+  const items = strip.querySelectorAll('.fp-item');
+  items.forEach(item => {
+    if (Number(item.dataset.idx) === idx) item.remove();
+  });
+  const zone = document.querySelector('label.file-upload-zone');
+  if (zone) zone.style.display = 'flex';
+}
+
+// 压缩图片：缩到最大800×800，JPEG quality 0.65 → 约50-100KB
+function compressImage(dataUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        const r = Math.min(MAX / w, MAX / h);
+        w = Math.round(w * r); h = Math.round(h * r);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.65));
+    };
+    img.src = dataUrl;
+  });
 }
 
 async function submitFbForm(e) {
@@ -1239,9 +1383,18 @@ async function submitFbForm(e) {
   btn.disabled = true;
   btn.textContent = '提交中…';
   try {
+    const fd = new FormData(form);
+    // 附加压缩后的图片（作为文本数据 URL 写入 message 尾部）
+    const validImgs = _fbImages.filter(Boolean);
+    if (validImgs.length > 0) {
+      const compressed = await Promise.all(validImgs.map(i => compressImage(i.dataUrl)));
+      compressed.forEach((dataUrl, n) => {
+        fd.append(`图片_${n + 1}`, dataUrl);
+      });
+    }
     const res = await fetch(FORM_ACTION, {
       method: 'POST',
-      body: new FormData(form),
+      body: fd,
       headers: { Accept: 'application/json' }
     });
     if (!res.ok) throw new Error(res.status);
