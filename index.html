@@ -1069,8 +1069,9 @@ function buildForm(formId, relatedQuestion, showCancel) {
   const cancelBtn = showCancel
     ? `<button type="button" class="f-btn-cancel" onclick="cancelFeedback(this)">取消</button>`
     : '';
-  const warnHtml = !FORM_ACTION
-    ? `<p class="f-warn">⚠️ 请先在 index.html 顶部配置 Formspree ID，才能启用邮件通知</p>`
+  const wxReady = WXPUSHER_TOKEN !== 'YOUR_WXPUSHER_TOKEN';
+  const warnHtml = !FORM_ACTION && !wxReady
+    ? `<p class="f-warn">⚠️ 请先配置 Formspree 或 WxPusher，才能启用通知</p>`
     : '';
   return `
 <form id="form-${formId}" onsubmit="submitForm(event,'${formId}')">
@@ -1109,29 +1110,50 @@ function renderNoResultsForm() {
 async function submitForm(e, formId) {
   e.preventDefault();
 
-  if (!FORM_ACTION) {
-    alert(
-      '⚠️ 表单服务尚未配置。\n\n' +
-      '请在 index.html 顶部将 YOUR_FORM_ID 替换为你的 Formspree 表单 ID。\n' +
-      '注册地址：https://formspree.io'
-    );
+  const wxReady = WXPUSHER_TOKEN !== 'YOUR_WXPUSHER_TOKEN';
+  if (!FORM_ACTION && !wxReady) {
+    alert('⚠️ 通知服务尚未配置，请先填写 Formspree 或 WxPusher 配置。');
     return;
   }
 
   const form    = document.getElementById('form-' + formId);
   const btn     = document.getElementById('sbtn-' + formId);
   const sentMsg = document.getElementById('sent-' + formId);
+  const fd      = new FormData(form);
 
   btn.disabled    = true;
   btn.textContent = '提交中…';
 
   try {
-    const res = await fetch(FORM_ACTION, {
-      method: 'POST',
-      body: new FormData(form),
-      headers: { Accept: 'application/json' }
-    });
-    if (!res.ok) throw new Error(res.status);
+    // Formspree 邮件（可选）
+    if (FORM_ACTION) {
+      const res = await fetch(FORM_ACTION, {
+        method: 'POST',
+        body: fd,
+        headers: { Accept: 'application/json' }
+      });
+      if (!res.ok) throw new Error(res.status);
+    }
+    // WxPusher 微信推送
+    if (wxReady) {
+      const wxLines = [
+        '📨 收到新的问题反馈',
+        `👤 姓名：${fd.get('name') || '-'}`,
+        `📞 联系方式：${fd.get('contact') || '-'}`,
+        `❓ 关联问题：${fd.get('related_question') || '无'}`,
+        `💬 描述：${(fd.get('message') || '-').slice(0, 300)}`
+      ].join('\n');
+      fetch('https://wxpusher.zjiecode.com/api/send/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appToken: WXPUSHER_TOKEN,
+          content: wxLines,
+          contentType: 1,
+          uids: [WXPUSHER_UID]
+        })
+      }).catch(() => {});
+    }
     form.style.display    = 'none';
     sentMsg.style.display = 'block';
   } catch {
@@ -1278,8 +1300,9 @@ function closeFeedbackPage() {
 }
 
 function buildFbForm(relatedQ) {
-  const warnHtml = !FORM_ACTION
-    ? `<p class="f-warn">⚠️ 请先在 index.html 顶部配置 Formspree ID，才能启用邮件通知</p>`
+  const wxReady2 = WXPUSHER_TOKEN !== 'YOUR_WXPUSHER_TOKEN';
+  const warnHtml = !FORM_ACTION && !wxReady2
+    ? `<p class="f-warn">⚠️ 请先配置 Formspree 或 WxPusher，才能启用通知</p>`
     : '';
   return `
 <form id="form-fb" onsubmit="submitFbForm(event)">
@@ -1388,8 +1411,9 @@ function compressImage(dataUrl) {
 
 async function submitFbForm(e) {
   e.preventDefault();
-  if (!FORM_ACTION) {
-    alert('⚠️ 表单服务尚未配置。\n请在 index.html 顶部将 YOUR_FORM_ID 替换为你的 Formspree 表单 ID。');
+  const wxReady = WXPUSHER_TOKEN !== 'YOUR_WXPUSHER_TOKEN';
+  if (!FORM_ACTION && !wxReady) {
+    alert('⚠️ 通知服务尚未配置，请先填写 Formspree 或 WxPusher 配置。');
     return;
   }
   const form = document.getElementById('form-fb');
@@ -1399,7 +1423,6 @@ async function submitFbForm(e) {
   btn.textContent = '提交中…';
   try {
     const fd = new FormData(form);
-    // 附加压缩后的图片（作为文本数据 URL 写入 message 尾部）
     const validImgs = _fbImages.filter(Boolean);
     if (validImgs.length > 0) {
       const compressed = await Promise.all(validImgs.map(i => compressImage(i.dataUrl)));
@@ -1407,16 +1430,17 @@ async function submitFbForm(e) {
         fd.append(`图片_${n + 1}`, dataUrl);
       });
     }
-    const res = await fetch(FORM_ACTION, {
-      method: 'POST',
-      body: fd,
-      headers: { Accept: 'application/json' }
-    });
-    if (!res.ok) throw new Error(res.status);
-    form.style.display = 'none';
-    msg.style.display  = 'block';
-    // ── 微信推送（WxPusher） ──
-    if (WXPUSHER_TOKEN !== 'YOUR_WXPUSHER_TOKEN' && WXPUSHER_UID !== 'YOUR_WXPUSHER_UID') {
+    // Formspree 邮件（可选）
+    if (FORM_ACTION) {
+      const res = await fetch(FORM_ACTION, {
+        method: 'POST',
+        body: fd,
+        headers: { Accept: 'application/json' }
+      });
+      if (!res.ok) throw new Error(res.status);
+    }
+    // WxPusher 微信推送
+    if (wxReady) {
       const wxLines = [
         '📨 收到新的问题反馈',
         `👤 姓名：${fd.get('name') || '-'}`,
@@ -1424,7 +1448,7 @@ async function submitFbForm(e) {
         `❓ 关联问题：${fd.get('related_question') || '无'}`,
         `💬 描述：${(fd.get('message') || '-').slice(0, 300)}`,
         fd.get('video_url') ? `🎬 视频链接：${fd.get('video_url')}` : '',
-        validImgs.length > 0 ? `🖼 已附 ${validImgs.length} 张图片（详见邮件）` : ''
+        validImgs.length > 0 ? `🖼 已附 ${validImgs.length} 张图片` : ''
       ].filter(Boolean).join('\n');
       fetch('https://wxpusher.zjiecode.com/api/send/message', {
         method: 'POST',
@@ -1435,8 +1459,10 @@ async function submitFbForm(e) {
           contentType: 1,
           uids: [WXPUSHER_UID]
         })
-      }).catch(() => {}); // 推送失败静默处理，不影响主流程
+      }).catch(() => {});
     }
+    form.style.display = 'none';
+    msg.style.display  = 'block';
   } catch {
     btn.disabled = false;
     btn.textContent = '📨 提交问题';
