@@ -550,7 +550,7 @@
       align-items: center;
       gap: 3px;
       cursor: pointer;
-      padding: 6px 20px;
+      padding: 6px 40px;
       border-radius: 14px;
       border: none;
       background: none;
@@ -566,11 +566,127 @@
       color: #1A2B4A;
       font-weight: 700;
     }
-    .nav-icon { font-size: 20px; line-height: 1; }
+    .nav-icon { font-size: 22px; line-height: 1; }
+
+    /* ── Feedback Page (全屏滑入) ─────────────────────────── */
+    .fb-page {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #f8f9fb;
+      z-index: 300;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .fb-page.show { display: block; }
+
+    .fb-header {
+      background: linear-gradient(135deg, #1A2B4A 0%, #031634 100%);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      padding: 52px 16px 16px;
+      gap: 10px;
+    }
+    @supports (padding-top: env(safe-area-inset-top)) {
+      .fb-header { padding-top: calc(16px + env(safe-area-inset-top)); }
+    }
+    .fb-back {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-family: inherit;
+      line-height: 1;
+    }
+    .fb-back:active { background: rgba(255,255,255,0.28); }
+    .fb-header-title {
+      font-family: 'Manrope', -apple-system, sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .fb-body {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+    }
+
+    /* 步骤说明卡片 */
+    .fb-steps-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 30px rgba(25,28,30,0.04);
+    }
+    .fb-steps-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1A2B4A;
+      letter-spacing: 0.03em;
+      margin-bottom: 16px;
+    }
+    .fb-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+    }
+    .fb-step:last-child { margin-bottom: 0; }
+    .fb-step-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1A2B4A, #031634);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .fb-step-body { flex: 1; min-width: 0; }
+    .fb-step-body strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #191c1e;
+      margin-bottom: 3px;
+    }
+    .fb-step-body p {
+      font-size: 13px;
+      color: #44474e;
+      line-height: 1.7;
+    }
+    .fb-step-body a { color: #1A2B4A; font-weight: 600; }
+
+    /* 反馈表单卡片 */
+    .fb-form-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px 16px;
+      box-shadow: 0 10px 30px rgba(25,28,30,0.04);
+    }
+    .fb-form-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #191c1e;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f2f4f6;
+    }
 
     @media (min-width: 640px) {
       .header-title { font-size: 20px; }
       .main { padding: 24px 24px 20px; }
+      .fb-body { padding: 24px 24px 60px; }
     }
   </style>
 </head>
@@ -627,15 +743,62 @@
   <img id="lbImg" src="" alt="图片预览">
 </div>
 
+<!-- ===== FEEDBACK PAGE（全屏） ===== -->
+<div class="fb-page" id="fbPage">
+  <div class="fb-header">
+    <button class="fb-back" onclick="closeFeedbackPage()">&#8592;</button>
+    <span class="fb-header-title">📝 提交反馈问题</span>
+  </div>
+  <div class="fb-body">
+    <!-- 操作步骤说明 -->
+    <div class="fb-steps-card">
+      <div class="fb-steps-title">📋 提交前请先参考以下说明</div>
+      <div class="fb-step">
+        <div class="fb-step-num">1</div>
+        <div class="fb-step-body">
+          <strong>详细描述问题</strong>
+          <p>说明设备型号、故障现象（如：开机无声音、蓝牙搜不到），以及已经尝试过哪些方法。</p>
+        </div>
+      </div>
+      <div class="fb-step">
+        <div class="fb-step-num">2</div>
+        <div class="fb-step-body">
+          <strong>提供图片步骤（可选）</strong>
+          <p>如果问题有视觉表现（屏幕异常、指示灯状态等），请截图或拍照，上传到图床如
+            <a href="https://imgse.com" target="_blank">imgse.com</a>，
+            再将生成的图片链接粘贴到问题描述中。</p>
+        </div>
+      </div>
+      <div class="fb-step">
+        <div class="fb-step-num">3</div>
+        <div class="fb-step-body">
+          <strong>提供视频操作步骤（可选）</strong>
+          <p>如果问题难以用文字描述，可录制操作过程视频，上传到微信视频号、抖音或 B 站，把分享链接粘贴到描述中。</p>
+        </div>
+      </div>
+      <div class="fb-step">
+        <div class="fb-step-num">4</div>
+        <div class="fb-step-body">
+          <strong>留下联系方式</strong>
+          <p>我们收到后会尽快通过微信或电话联系你跟进处理。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 反馈表单 -->
+    <div class="fb-form-card">
+      <div class="fb-form-title">填写反馈信息</div>
+      <div id="fbFormWrap"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ===== BOTTOM NAV ===== -->
 <nav class="bottom-nav">
   <button class="nav-item active" id="navHome" onclick="navHome()">
     <span class="nav-icon">🏠</span>首页
   </button>
-  <button class="nav-item" id="navSearch" onclick="navSearch()">
-    <span class="nav-icon">🔍</span>搜索
-  </button>
-  <button class="nav-item" id="navFeedback" onclick="navFeedback()">
+  <button class="nav-item" id="navFeedback" onclick="openFeedbackPage()">
     <span class="nav-icon">💬</span>反馈
   </button>
 </nav>
@@ -809,9 +972,7 @@ function buildCard(f) {
     <div class="feedback-trigger-row">
       <button class="trigger-btn" data-id="${f.id}">😕 看完还是没解决？点击反馈</button>
     </div>
-    <div class="feedback-form-section" id="ff-${f.id}">
-      ${buildForm('f-' + f.id, esc(f.question), true)}
-    </div>
+    <div class="feedback-form-section" id="ff-${f.id}"></div>
   </div>
 </div>`;
 }
@@ -974,17 +1135,12 @@ document.addEventListener('click', function (e) {
     return;
   }
 
-  // 反馈触发按钮
+  // 反馈触发按钮 → 打开全屏反馈页
   const triggerBtn = e.target.closest('.trigger-btn[data-id]');
   if (triggerBtn) {
-    const id      = triggerBtn.dataset.id;
-    const section = document.getElementById('ff-' + id);
-    const row     = triggerBtn.closest('.feedback-trigger-row');
-    if (section) {
-      section.classList.add('open');
-      if (row) row.style.display = 'none';
-      section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+    const card = triggerBtn.closest('.faq-card');
+    const qText = card ? card.querySelector('.faq-q-text') : null;
+    openFeedbackPage(qText ? qText.textContent.trim() : '');
     return;
   }
 
@@ -1015,32 +1171,95 @@ function clearSearch() {
   render();
 }
 
-// ── 底部导航辅助函数 ─────────────────────────────────────────────
-function setNavActive(id) {
-  ['navHome','navSearch','navFeedback'].forEach(n => {
-    const el = document.getElementById(n);
-    if (el) el.classList.toggle('active', n === id);
-  });
+// ── 全屏反馈页 ───────────────────────────────────────────────────
+function openFeedbackPage(relatedQ) {
+  const wrap = document.getElementById('fbFormWrap');
+  wrap.innerHTML = buildFbForm(relatedQ || '');
+  document.getElementById('fbPage').classList.add('show');
+  document.getElementById('fbPage').scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+  document.getElementById('navHome').classList.remove('active');
+  document.getElementById('navFeedback').classList.add('active');
 }
+function closeFeedbackPage() {
+  document.getElementById('fbPage').classList.remove('show');
+  document.body.style.overflow = '';
+  document.getElementById('navFeedback').classList.remove('active');
+  document.getElementById('navHome').classList.add('active');
+}
+
+function buildFbForm(relatedQ) {
+  const warnHtml = !FORM_ACTION
+    ? `<p class="f-warn">⚠️ 请先在 index.html 顶部配置 Formspree ID，才能启用邮件通知</p>`
+    : '';
+  return `
+<form id="form-fb" onsubmit="submitFbForm(event)">
+  <input type="text" name="_gotcha" class="f-bot-check" tabindex="-1" autocomplete="off">
+  <input type="hidden" name="related_question" value="${esc(relatedQ)}">
+  <div class="f-group">
+    <label>姓名 / 昵称</label>
+    <input type="text" name="name" placeholder="请输入你的称呼" required maxlength="50">
+  </div>
+  <div class="f-group">
+    <label>联系方式（微信号或手机号）</label>
+    <input type="text" name="contact" placeholder="方便我们联系你" required maxlength="50">
+  </div>
+  <div class="f-group">
+    <label>问题描述</label>
+    <textarea name="message"
+      placeholder="请详细描述：设备型号、故障现象、已尝试过的方法…&#10;如有图片/视频链接也可以粘贴在这里"
+      required maxlength="1000" style="min-height:120px"></textarea>
+  </div>
+  <div class="f-group">
+    <label>图片链接（可选）</label>
+    <input type="url" name="image_url" placeholder="将图片上传到图床后，把链接粘贴于此" maxlength="500">
+  </div>
+  <div class="f-group">
+    <label>视频操作步骤链接（可选）</label>
+    <input type="url" name="video_url" placeholder="微信视频号 / 抖音 / 其他平台分享链接" maxlength="500">
+  </div>
+  <div class="f-actions" style="margin-top:18px">
+    <button type="button" class="f-btn-cancel" onclick="closeFeedbackPage()">取消</button>
+    <button type="submit" class="f-btn-submit" id="sbtn-fb">📨 提交问题</button>
+  </div>
+  <div class="f-sent-msg" id="sent-fb">✅ 已收到你的反馈，我们会尽快联系你！</div>
+  ${warnHtml}
+</form>`;
+}
+
+async function submitFbForm(e) {
+  e.preventDefault();
+  if (!FORM_ACTION) {
+    alert('⚠️ 表单服务尚未配置。\n请在 index.html 顶部将 YOUR_FORM_ID 替换为你的 Formspree 表单 ID。');
+    return;
+  }
+  const form = document.getElementById('form-fb');
+  const btn  = document.getElementById('sbtn-fb');
+  const msg  = document.getElementById('sent-fb');
+  btn.disabled = true;
+  btn.textContent = '提交中…';
+  try {
+    const res = await fetch(FORM_ACTION, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { Accept: 'application/json' }
+    });
+    if (!res.ok) throw new Error(res.status);
+    form.style.display = 'none';
+    msg.style.display  = 'block';
+  } catch {
+    btn.disabled = false;
+    btn.textContent = '📨 提交问题';
+    alert('提交失败，请检查网络后重试。');
+  }
+}
+
+// ── 底部导航辅助函数 ─────────────────────────────────────────────
 function navHome() {
   clearSearch();
-  setNavActive('navHome');
+  document.getElementById('navHome').classList.add('active');
+  document.getElementById('navFeedback').classList.remove('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function navSearch() {
-  setNavActive('navSearch');
-  document.getElementById('searchInput').focus();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function navFeedback() {
-  setNavActive('navFeedback');
-  // 无结果时直接显示，有结果时滚动到第一个反馈按钮
-  const firstTrigger = document.querySelector('.trigger-btn');
-  if (firstTrigger) {
-    firstTrigger.closest('.faq-card').classList.add('open');
-    firstTrigger.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => firstTrigger.click(), 400);
-  }
 }
 
 // ── 启动 ──────────────────────────────────────────────────────────
