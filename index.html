@@ -4,59 +4,90 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>售后问题解答</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-      background: #f0f2f5;
-      color: #1a1a1a;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: #f8f9fb;
+      color: #191c1e;
       font-size: 15px;
       line-height: 1.6;
       min-height: 100vh;
+      padding-bottom: 88px;
     }
 
-    /* ── Header ─────────────────────────────────────────── */
+    /* ── Header — dark navy metallic ───────────────────── */
     .header {
-      background: linear-gradient(135deg, #1677ff 0%, #0958d9 100%);
-      color: #fff;
-      padding: 18px 16px 0;
+      background: linear-gradient(135deg, #1A2B4A 0%, #031634 100%);
       position: sticky;
       top: 0;
       z-index: 200;
-      box-shadow: 0 2px 12px rgba(22, 119, 255, 0.35);
+      overflow: hidden;
     }
+    .header::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.06) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .header-inner { position: relative; z-index: 1; }
+    .header-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 20px 0;
+      gap: 8px;
+    }
+    .header-icon { font-size: 16px; opacity: 0.85; }
     .header-title {
-      text-align: center;
+      font-family: 'Manrope', -apple-system, sans-serif;
       font-size: 17px;
-      font-weight: 600;
-      margin-bottom: 14px;
-      letter-spacing: 0.5px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.3px;
     }
 
-    /* Search bar */
+    /* Search section (white card) */
+    .search-section {
+      background: #fff;
+      border-radius: 0 0 28px 28px;
+      margin-top: 12px;
+      padding: 16px 16px 4px;
+      box-shadow: 0 20px 40px rgba(25,28,30,0.04);
+    }
     .search-bar { position: relative; margin-bottom: 12px; }
     .search-bar input {
       width: 100%;
-      height: 40px;
-      padding: 0 42px 0 40px;
-      border: none;
-      border-radius: 20px;
-      background: #fff;
+      height: 48px;
+      padding: 0 44px 0 46px;
+      border: 1.5px solid rgba(197,198,207,0.4);
+      border-radius: 14px;
+      background: #f2f4f6;
       font-size: 14px;
-      color: #333;
+      font-family: inherit;
+      color: #191c1e;
       outline: none;
       -webkit-appearance: none;
       appearance: none;
+      transition: border-color 0.2s, background 0.2s;
     }
-    .search-bar input::placeholder { color: #bbb; }
+    .search-bar input:focus {
+      background: #fff;
+      border-color: #4e5e80;
+      box-shadow: 0 0 0 3px rgba(78,94,128,0.12);
+    }
+    .search-bar input::placeholder { color: #94959a; }
     .search-icon {
       position: absolute;
-      left: 14px;
+      left: 15px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 15px;
-      color: #bbb;
+      font-size: 16px;
+      color: #94959a;
       pointer-events: none;
     }
     .clear-icon {
@@ -64,20 +95,20 @@
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 22px;
+      font-size: 20px;
       color: #bbb;
       cursor: pointer;
       display: none;
-      padding: 4px;
+      padding: 6px;
       line-height: 1;
     }
 
-    /* Category tabs */
+    /* Category pills */
     .cats-scroll {
       display: flex;
       overflow-x: auto;
       white-space: nowrap;
-      padding-bottom: 12px;
+      padding: 0 0 14px;
       gap: 8px;
       scrollbar-width: none;
       -ms-overflow-style: none;
@@ -86,125 +117,147 @@
     .cats-scroll::-webkit-scrollbar { display: none; }
     .cat-btn {
       flex-shrink: 0;
-      padding: 5px 14px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.18);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: rgba(255, 255, 255, 0.9);
+      padding: 7px 18px;
+      border-radius: 999px;
+      background: transparent;
+      border: 1.5px solid rgba(117,119,126,0.3);
+      color: #44474e;
       font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
       cursor: pointer;
       user-select: none;
-      transition: background 0.15s, color 0.15s;
+      transition: all 0.18s;
     }
+    .cat-btn:active { transform: scale(0.95); }
     .cat-btn.active {
-      background: #fff;
-      color: #1677ff;
-      font-weight: 600;
-      border-color: #fff;
+      background: #d3e3ff;
+      border-color: #d3e3ff;
+      color: #031634;
+      font-weight: 700;
     }
 
     /* ── Main ─────────────────────────────────────────── */
     .main {
       max-width: 720px;
       margin: 0 auto;
-      padding: 14px 12px 60px;
+      padding: 20px 14px 20px;
     }
     .result-hint {
-      font-size: 12px;
-      color: #aaa;
-      padding: 0 4px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94959a;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0 4px 12px;
     }
 
     /* ── FAQ Card ─────────────────────────────────────── */
     .faq-card {
       background: #fff;
-      border-radius: 12px;
-      margin-bottom: 8px;
+      border-radius: 16px;
+      margin-bottom: 12px;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 10px 30px rgba(25,28,30,0.04);
+      transition: box-shadow 0.3s;
+    }
+    .faq-card:hover {
+      box-shadow: 0 20px 40px rgba(25,28,30,0.08);
     }
     .faq-q {
       display: flex;
       align-items: flex-start;
-      padding: 13px 14px;
+      padding: 18px 18px 16px;
       cursor: pointer;
-      gap: 10px;
+      gap: 12px;
       user-select: none;
     }
     .faq-q-content { flex: 1; min-width: 0; }
     .faq-cat-badge {
       display: inline-block;
-      font-size: 11px;
-      color: #1677ff;
-      background: #e8f3ff;
-      border-radius: 8px;
-      padding: 1px 8px;
-      margin-bottom: 4px;
-      font-weight: 500;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #1A2B4A;
+      background: rgba(211,227,255,0.5);
+      border-radius: 6px;
+      padding: 2px 9px;
+      margin-bottom: 7px;
     }
     .faq-q-text {
-      font-size: 15px;
-      font-weight: 500;
-      color: #222;
-      line-height: 1.5;
+      font-size: 16px;
+      font-weight: 600;
+      color: #191c1e;
+      line-height: 1.45;
+      padding-right: 4px;
     }
     .faq-tags-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
-      margin-top: 5px;
+      gap: 5px;
+      margin-top: 8px;
     }
     .faq-tag-item {
-      font-size: 11px;
-      color: #999;
-      background: #f5f5f5;
-      padding: 1px 7px;
+      font-size: 10px;
+      color: #44474e;
+      border: 1px solid rgba(117,119,126,0.28);
+      padding: 2px 8px;
       border-radius: 6px;
+      font-weight: 500;
     }
     .faq-arrow {
-      color: #ccc;
-      font-size: 12px;
-      margin-top: 4px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #f2f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
-      transition: transform 0.25s, color 0.25s;
+      color: #75777e;
+      font-size: 11px;
+      margin-top: 2px;
+      transition: transform 0.25s, background 0.2s, color 0.2s;
     }
     .faq-card.open .faq-arrow {
       transform: rotate(180deg);
-      color: #1677ff;
+      background: #d3e3ff;
+      color: #031634;
     }
 
     /* Answer panel */
     .faq-panel {
       display: none;
-      border-top: 1px solid #f3f3f3;
-      animation: slideDown 0.2s ease;
+      border-top: 1px solid #f2f4f6;
+      animation: slideDown 0.22s ease;
     }
     .faq-card.open .faq-panel { display: block; }
 
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-6px); }
+      from { opacity: 0; transform: translateY(-8px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
     .faq-answer {
-      padding: 14px 14px 8px;
+      padding: 16px 18px 10px;
       font-size: 14px;
-      color: #444;
-      line-height: 1.85;
+      color: #44474e;
+      line-height: 1.9;
       white-space: pre-wrap;
     }
-    .faq-answer strong { color: #222; font-weight: 600; }
+    .faq-answer strong { color: #191c1e; font-weight: 600; }
 
     .faq-imgs {
-      padding: 0 14px 10px;
+      padding: 0 18px 12px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
     }
     .faq-imgs img {
       max-width: 100%;
-      border-radius: 8px;
-      border: 1px solid #eee;
+      border-radius: 10px;
+      border: 1px solid #f0f0f0;
       display: block;
       cursor: zoom-in;
     }
@@ -213,15 +266,17 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin: 2px 14px 10px;
-      padding: 10px 14px;
-      background: #f0f7ff;
-      border-radius: 8px;
-      color: #1677ff;
+      margin: 4px 18px 12px;
+      padding: 11px 16px;
+      background: #f2f4f6;
+      border-radius: 10px;
+      color: #1A2B4A;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       text-decoration: none;
+      transition: background 0.2s;
     }
+    .faq-video-btn:active { background: #e7e8ea; }
     .faq-video-btn::before {
       content: '🎬';
       font-size: 16px;
@@ -229,30 +284,31 @@
 
     /* Feedback section */
     .feedback-trigger-row {
-      padding: 4px 14px 14px;
+      padding: 6px 18px 16px;
     }
     .trigger-btn {
       width: 100%;
-      padding: 9px 12px;
+      padding: 10px 12px;
       background: none;
-      border: 1.5px dashed #e0e0e0;
-      border-radius: 8px;
-      color: #999;
+      border: 1.5px dashed rgba(117,119,126,0.35);
+      border-radius: 10px;
+      color: #75777e;
       font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
       font-family: inherit;
       transition: all 0.2s;
     }
     .trigger-btn:active,
     .trigger-btn:hover {
-      border-color: #1677ff;
-      color: #1677ff;
-      background: #f5f9ff;
+      border-color: #4e5e80;
+      color: #1A2B4A;
+      background: rgba(211,227,255,0.2);
     }
 
     .feedback-form-section {
       display: none;
-      padding: 0 14px 16px;
+      padding: 0 18px 18px;
     }
     .feedback-form-section.open { display: block; }
 
@@ -261,32 +317,35 @@
     .f-group label {
       display: block;
       font-size: 12px;
-      color: #888;
-      margin-bottom: 4px;
+      font-weight: 600;
+      color: #75777e;
+      letter-spacing: 0.03em;
+      margin-bottom: 5px;
     }
     .f-group input,
     .f-group textarea {
       width: 100%;
-      padding: 9px 11px;
-      border: 1px solid #e4e4e4;
-      border-radius: 8px;
+      padding: 10px 13px;
+      border: 1.5px solid rgba(197,198,207,0.5);
+      border-radius: 10px;
       font-size: 14px;
-      color: #333;
+      color: #191c1e;
+      background: #f8f9fb;
       outline: none;
       font-family: inherit;
       -webkit-appearance: none;
-      background: #fff;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, background 0.2s;
     }
     .f-group input:focus,
     .f-group textarea:focus {
-      border-color: #1677ff;
-      box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+      background: #fff;
+      border-color: #4e5e80;
+      box-shadow: 0 0 0 3px rgba(78,94,128,0.12);
     }
     .f-group textarea {
       resize: vertical;
       min-height: 85px;
-      line-height: 1.6;
+      line-height: 1.65;
     }
     .f-bot-check {
       position: absolute;
@@ -294,104 +353,135 @@
       opacity: 0;
       height: 0;
     }
-    .f-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .f-actions { display: flex; gap: 8px; margin-top: 14px; }
     .f-btn-cancel {
       flex: 1;
-      padding: 10px;
+      padding: 11px;
       background: none;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      color: #888;
+      border: 1.5px solid rgba(197,198,207,0.5);
+      border-radius: 999px;
+      color: #75777e;
       font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
       font-family: inherit;
     }
     .f-btn-submit {
       flex: 2;
-      padding: 10px;
-      background: #1677ff;
+      padding: 11px;
+      background: linear-gradient(135deg, #1A2B4A 0%, #031634 100%);
       border: none;
-      border-radius: 8px;
+      border-radius: 999px;
       color: #fff;
       font-size: 14px;
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       font-family: inherit;
-      transition: background 0.2s;
+      box-shadow: 0 8px 20px rgba(3,22,52,0.25);
+      transition: opacity 0.2s, transform 0.15s;
     }
-    .f-btn-submit:active { background: #0958d9; }
-    .f-btn-submit:disabled { background: #91caff; cursor: not-allowed; }
+    .f-btn-submit:active { transform: scale(0.97); opacity: 0.9; }
+    .f-btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .f-sent-msg {
       display: none;
       text-align: center;
       padding: 14px;
       font-size: 14px;
-      color: #52c41a;
-      background: #f6ffed;
-      border: 1px solid #b7eb8f;
-      border-radius: 8px;
-      margin-top: 4px;
+      font-weight: 500;
+      color: #1a7f37;
+      background: #eafaef;
+      border: 1px solid #b4e5c3;
+      border-radius: 10px;
+      margin-top: 6px;
     }
     .f-warn {
       font-size: 12px;
-      color: #fa8c16;
+      color: #b95000;
       margin-top: 8px;
       text-align: center;
-      background: #fff7e6;
+      background: #fff8f0;
       padding: 8px 10px;
-      border-radius: 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(185,80,0,0.15);
     }
 
     /* ── No Results ─────────────────────────────────────── */
-    .no-results { display: none; padding: 28px 0 16px; }
+    .no-results { display: none; padding: 24px 0 16px; }
     .no-results.show { display: block; }
 
-    .no-results-header { text-align: center; margin-bottom: 20px; }
-    .no-results-header .icon { font-size: 44px; }
-    .no-results-header h3 {
-      font-size: 16px;
-      color: #555;
-      margin: 10px 0 5px;
+    .no-results-editorial {
+      position: relative;
+      overflow: hidden;
+      border-radius: 20px;
+      margin-bottom: 14px;
     }
-    .no-results-header p {
+    .no-results-blur-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #1A2B4A 0%, #031634 100%);
+    }
+    .no-results-blur-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(211,227,255,0.15) 0%, transparent 60%);
+    }
+    .no-results-inner {
+      position: relative;
+      z-index: 1;
+      padding: 32px 20px;
+      text-align: center;
+    }
+    .no-results-inner .icon { font-size: 40px; margin-bottom: 12px; display: block; }
+    .no-results-inner h3 {
+      font-family: 'Manrope', -apple-system, sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .no-results-inner p {
       font-size: 13px;
-      color: #aaa;
-      margin-bottom: 10px;
+      color: rgba(255,255,255,0.65);
+      max-width: 240px;
+      margin: 0 auto 16px;
+      line-height: 1.65;
     }
     .clear-link {
+      display: inline-block;
       font-size: 13px;
-      color: #1677ff;
+      font-weight: 600;
+      color: #d3e3ff;
       cursor: pointer;
-      text-decoration: underline;
+      padding: 2px 0;
+      border-bottom: 1px solid rgba(211,227,255,0.4);
     }
 
     .no-results-card {
       background: #fff;
-      border-radius: 12px;
-      padding: 18px 16px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      border-radius: 16px;
+      padding: 20px 18px;
+      box-shadow: 0 10px 30px rgba(25,28,30,0.04);
     }
     .no-results-card h4 {
       font-size: 15px;
-      font-weight: 500;
-      color: #333;
+      font-weight: 600;
+      color: #191c1e;
       margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f2f4f6;
     }
 
     /* ── Loading / Error ─────────────────────────────────── */
-    .app-loading, .app-error {
+    .app-error {
       text-align: center;
       padding: 60px 20px;
-      color: #bbb;
+      color: #ba1a1a;
       font-size: 14px;
     }
-    .app-error { color: #ff4d4f; }
     .app-error small {
       display: block;
-      color: #ccc;
+      color: #94959a;
       font-size: 12px;
       margin-top: 10px;
       line-height: 1.8;
@@ -402,7 +492,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.88);
+      background: rgba(0,0,0,0.9);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -412,7 +502,7 @@
     .lightbox img {
       max-width: 100%;
       max-height: 92vh;
-      border-radius: 6px;
+      border-radius: 8px;
       display: block;
     }
     .lb-close {
@@ -424,6 +514,8 @@
       cursor: pointer;
       line-height: 1;
       opacity: 0.7;
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
     }
     .lb-close:hover { opacity: 1; }
 
@@ -435,10 +527,50 @@
       padding: 0 1px;
     }
 
+    /* ── Bottom Nav ────────────────────────────────────────── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 16px 20px;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(197,198,207,0.2);
+      border-radius: 24px 24px 0 0;
+      z-index: 100;
+      box-shadow: 0 -10px 30px rgba(25,28,30,0.05);
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      padding: 6px 20px;
+      border-radius: 14px;
+      border: none;
+      background: none;
+      font-family: inherit;
+      color: #75777e;
+      font-size: 11px;
+      font-weight: 500;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-item.active {
+      background: #f2f4f6;
+      color: #1A2B4A;
+      font-weight: 700;
+    }
+    .nav-icon { font-size: 20px; line-height: 1; }
+
     @media (min-width: 640px) {
-      .header { padding: 20px 20px 0; }
-      .header-title { font-size: 19px; }
-      .main { padding: 16px 20px 60px; }
+      .header-title { font-size: 20px; }
+      .main { padding: 24px 24px 20px; }
     }
   </style>
 </head>
@@ -446,39 +578,45 @@
 
 <!-- ===== HEADER ===== -->
 <div class="header">
-  <div class="header-title">🔧 售后问题解答</div>
-  <div class="search-bar">
-    <span class="search-icon">🔍</span>
-    <input type="search" id="searchInput"
-           placeholder="输入关键词搜索，如：没声音、蓝牙…" autocomplete="off">
-    <span class="clear-icon" id="clearIcon" onclick="clearSearch()">×</span>
-  </div>
-  <div class="cats-scroll" id="catContainer">
-    <!-- 分类标签由 JS 渲染 -->
+  <div class="header-inner">
+    <div class="header-titlebar">
+      <span class="header-icon">🔧</span>
+      <span class="header-title">售后问题解答</span>
+    </div>
+    <div class="search-section">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input type="search" id="searchInput"
+               placeholder="输入关键词搜索，如：没声音、蓝牙…" autocomplete="off">
+        <span class="clear-icon" id="clearIcon" onclick="clearSearch()">×</span>
+      </div>
+      <div class="cats-scroll" id="catContainer">
+        <!-- 分类标签由 JS 渲染 -->
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- ===== MAIN ===== -->
 <div class="main">
   <div class="result-hint" id="resultHint"></div>
-
-  <div id="faqContainer">
-    <div class="app-loading">⏳ 加载中…</div>
-  </div>
+  <div id="faqContainer"></div>
 
   <!-- 无搜索结果状态 -->
   <div class="no-results" id="noResults">
-    <div class="no-results-header">
-      <div class="icon">🔎</div>
-      <h3>没有找到相关问题</h3>
-      <p>换个关键词试试，或者直接告诉我们你的问题</p>
-      <span class="clear-link" onclick="clearSearch()">← 清除搜索重试</span>
+    <div class="no-results-editorial">
+      <div class="no-results-blur-bg"></div>
+      <div class="no-results-blur-overlay"></div>
+      <div class="no-results-inner">
+        <span class="icon">🔎</span>
+        <h3>没有找到相关问题</h3>
+        <p>换个关键词试试，或者直接告诉我们你遇到的问题</p>
+        <span class="clear-link" onclick="clearSearch()">← 清除搜索重试</span>
+      </div>
     </div>
     <div class="no-results-card">
       <h4>📝 告诉我们你的问题</h4>
-      <div id="noResultsFormWrap">
-        <!-- 表单由 JS 渲染 -->
-      </div>
+      <div id="noResultsFormWrap"></div>
     </div>
   </div>
 </div>
@@ -488,6 +626,19 @@
   <span class="lb-close" id="lbClose">×</span>
   <img id="lbImg" src="" alt="图片预览">
 </div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="navHome" onclick="navHome()">
+    <span class="nav-icon">🏠</span>首页
+  </button>
+  <button class="nav-item" id="navSearch" onclick="navSearch()">
+    <span class="nav-icon">🔍</span>搜索
+  </button>
+  <button class="nav-item" id="navFeedback" onclick="navFeedback()">
+    <span class="nav-icon">💬</span>反馈
+  </button>
+</nav>
 
 <script>
 // ================================================================
@@ -649,7 +800,7 @@ function buildCard(f) {
       <div class="faq-q-text">${hl(f.question)}</div>
       <div class="faq-tags-row">${tags}</div>
     </div>
-    <span class="faq-arrow">▼</span>
+    <div class="faq-arrow">▾</div>
   </div>
   <div class="faq-panel">
     <div class="faq-answer">${fmt(f.answer)}</div>
@@ -862,6 +1013,34 @@ function clearSearch() {
   currentKw = '';
   document.getElementById('clearIcon').style.display = 'none';
   render();
+}
+
+// ── 底部导航辅助函数 ─────────────────────────────────────────────
+function setNavActive(id) {
+  ['navHome','navSearch','navFeedback'].forEach(n => {
+    const el = document.getElementById(n);
+    if (el) el.classList.toggle('active', n === id);
+  });
+}
+function navHome() {
+  clearSearch();
+  setNavActive('navHome');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function navSearch() {
+  setNavActive('navSearch');
+  document.getElementById('searchInput').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function navFeedback() {
+  setNavActive('navFeedback');
+  // 无结果时直接显示，有结果时滚动到第一个反馈按钮
+  const firstTrigger = document.querySelector('.trigger-btn');
+  if (firstTrigger) {
+    firstTrigger.closest('.faq-card').classList.add('open');
+    firstTrigger.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => firstTrigger.click(), 400);
+  }
 }
 
 // ── 启动 ──────────────────────────────────────────────────────────
