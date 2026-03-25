@@ -889,6 +889,21 @@
 const FORMSPREE_ID = 'YOUR_FORM_ID';
 // ================================================================
 
+// ================================================================
+// 【微信通知配置 — WxPusher（免费）】
+// 配置后每次收到反馈时，你的微信将立即收到推送消息。
+// 操作步骤：
+//   1. 电脑浏览器打开 https://wxpusher.zjiecode.com
+//      用微信扫码登录
+//   2. 「我的应用」→「创建应用」，填写应用名（如 FAQ反馈通知），保存
+//   3. 进入应用详情，复制 AppToken，填到下面 WXPUSHER_TOKEN
+//   4. 点「关注应用」→ 用你自己的微信扫二维码关注
+//   5. 关注后在「我的UID」页面复制你的 UID，填到 WXPUSHER_UID
+//
+const WXPUSHER_TOKEN = 'AT_15ciVt88zFm08hrGoKUucRSwLs4br4zS';
+const WXPUSHER_UID   = 'UID_LNwIqGYlXslkhP3EmBq14u24ufSd';
+// ================================================================
+
 const FORM_ACTION = FORMSPREE_ID !== 'YOUR_FORM_ID'
   ? `https://formspree.io/f/${FORMSPREE_ID}`
   : null;
@@ -1400,6 +1415,28 @@ async function submitFbForm(e) {
     if (!res.ok) throw new Error(res.status);
     form.style.display = 'none';
     msg.style.display  = 'block';
+    // ── 微信推送（WxPusher） ──
+    if (WXPUSHER_TOKEN !== 'YOUR_WXPUSHER_TOKEN' && WXPUSHER_UID !== 'YOUR_WXPUSHER_UID') {
+      const wxLines = [
+        '📨 收到新的问题反馈',
+        `👤 姓名：${fd.get('name') || '-'}`,
+        `📞 联系方式：${fd.get('contact') || '-'}`,
+        `❓ 关联问题：${fd.get('related_question') || '无'}`,
+        `💬 描述：${(fd.get('message') || '-').slice(0, 300)}`,
+        fd.get('video_url') ? `🎬 视频链接：${fd.get('video_url')}` : '',
+        validImgs.length > 0 ? `🖼 已附 ${validImgs.length} 张图片（详见邮件）` : ''
+      ].filter(Boolean).join('\n');
+      fetch('https://wxpusher.zjiecode.com/api/send/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appToken: WXPUSHER_TOKEN,
+          content: wxLines,
+          contentType: 1,
+          uids: [WXPUSHER_UID]
+        })
+      }).catch(() => {}); // 推送失败静默处理，不影响主流程
+    }
   } catch {
     btn.disabled = false;
     btn.textContent = '📨 提交问题';
