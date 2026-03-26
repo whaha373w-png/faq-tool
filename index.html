@@ -1413,12 +1413,13 @@ document.addEventListener('click', function (e) {
     return;
   }
 
-  // 反馈触发按钮 → 打开全屏反馈页
+  // 反馈触发按钮 → 打开 AI 问答页
   const triggerBtn = e.target.closest('.trigger-btn[data-id]');
   if (triggerBtn) {
     const card = triggerBtn.closest('.faq-card');
     const qText = card ? card.querySelector('.faq-q-text') : null;
-    openFeedbackPage(qText ? qText.textContent.trim() : '');
+    const prefill = qText ? `我看了"${qText.textContent.trim()}"的解答，但还是没解决，请帮我进一步排查。` : '';
+    openAiPage(prefill);
     return;
   }
 
