@@ -1044,9 +1044,6 @@
   <button class="nav-item" id="navAi" onclick="openAiPage()">
     <span class="nav-icon">🤖</span>AI问答
   </button>
-  <button class="nav-item" id="navFeedback" onclick="openFeedbackPage()">
-    <span class="nav-icon">💬</span>反馈
-  </button>
 </nav>
 
 <script>
@@ -1462,12 +1459,10 @@ function openFeedbackPage(relatedQ) {
   document.getElementById('fbPage').scrollTop = 0;
   document.body.style.overflow = 'hidden';
   document.getElementById('navHome').classList.remove('active');
-  document.getElementById('navFeedback').classList.add('active');
 }
 function closeFeedbackPage() {
   document.getElementById('fbPage').classList.remove('show');
   document.body.style.overflow = '';
-  document.getElementById('navFeedback').classList.remove('active');
   document.getElementById('navHome').classList.add('active');
 }
 
@@ -1638,7 +1633,6 @@ function navHome() {
   clearSearch();
   document.getElementById('navHome').classList.add('active');
   document.getElementById('navAi').classList.remove('active');
-  document.getElementById('navFeedback').classList.remove('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1650,14 +1644,16 @@ function buildSystemPrompt() {
   const items = FAQ_DATA.map(f =>
     `【问题】${f.question}\n【答案】${f.answer.replace(/\*\*/g,'').replace(/\n/g,' ')}`
   ).join('\n\n');
-  return `你是一名专业的产品售后技术支持助手，服务对象是销售人员。请根据下列知识库内容回答用户的问题。
+  return `你是一名产品售后技术支持助手，服务对象是销售人员。你的职责范围**严格限定**在下方知识库所包含的产品问题。
 
 回答规范：
 - 语言简洁口语化，适合手机查看
 - 有操作步骤时请用 1. 2. 3. 编号列出
 - 若知识库有直接答案，优先引用并稍作整理
-- 若问题超出知识库范围，给出合理建议并说明需联系技术支持
+- 若问题明显与产品无关（如闲聊、天气、笑话等），直接回复：「我只能解答产品相关问题，请描述您遇到的设备故障。」
+- 若问题与产品相关但知识库无答案，回复：「知识库暂无此问题的记录，建议直接联系管理员获取帮助。」
 - 禁止编造不存在的功能或参数
+- 禁止回答任何与产品无关的话题
 
 【产品知识库】
 ${items}`;
@@ -1668,7 +1664,6 @@ function openAiPage(prefillText) {
   document.body.style.overflow = 'hidden';
   document.getElementById('navHome').classList.remove('active');
   document.getElementById('navAi').classList.add('active');
-  document.getElementById('navFeedback').classList.remove('active');
   // 首次打开时显示欢迎气泡
   if (_aiHistory.length === 0) {
     appendAiBubble('bot', '你好！👋 我是 AI 售后助手，已内置产品知识库。\n请描述你遇到的问题，我会尽力给出解决方案。');
