@@ -1079,13 +1079,12 @@ const WXPUSHER_UID   = 'UID_LNwIqGYlXslkhP3EmBq14u24ufSd';
 // ================================================================
 
 // ================================================================
-// 【AI 问答配置 — Cloudflare Worker 代理地址】
-// 操作步骤：
-//   1. 打开 worker.js 文件，按里面的说明部署到 Cloudflare Workers（免费）
-//   2. 部署后将 Worker 的访问地址填入下方，格式如：
-//      'https://my-faq-proxy.xxxxx.workers.dev'
+// 【AI 问答配置 — 千问 API Key】
+// ❗ 注意：Key 会包含在页面源码中，仅适合内部人员使用的工具，请勿公开分享给陷生人。
+// 如发现 Key 泛用，可到阿里云控制台 → 访问控制 → 禁用此 Key。
 //
-const WORKER_URL = 'YOUR_WORKER_URL';
+const QWEN_API_KEY = 'sk-ee96bc216581423e918cbb2f12d4b712';
+const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 // ================================================================
 
 const FORM_ACTION = FORMSPREE_ID !== 'YOUR_FORM_ID'
@@ -1719,14 +1718,8 @@ async function sendAiMessage(text) {
   const msg   = (text || input.value).trim();
   if (!msg) return;
 
-  if (WORKER_URL === 'YOUR_WORKER_URL') {
-    appendAiBubble('bot', '⚠️ AI 问答尚未配置。\n请先按 worker.js 里的说明部署 Cloudflare Worker，\n再将地址填入 index.html 顶部的 WORKER_URL。');
-    return;
-  }
-
   input.value = '';
   autoResizeAiInput(input);
-  // 隐藏快捷提示
   document.getElementById('aiTips').style.display = 'none';
 
   appendAiBubble('user', msg);
@@ -1737,9 +1730,12 @@ async function sendAiMessage(text) {
   const thinkingBubble = appendAiBubble('bot', '…');
 
   try {
-    const res = await fetch(WORKER_URL, {
+    const res = await fetch(QWEN_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${QWEN_API_KEY}`
+      },
       body: JSON.stringify({
         model: 'qwen-turbo',
         messages: [
@@ -1751,9 +1747,10 @@ async function sendAiMessage(text) {
       })
     });
     const data = await res.json();
-    const reply = data?.choices?.[0]?.message?.content || '抱歉，未能获取回复，请稍后再试。';
+    const reply = data?.choices?.[0]?.message?.content
+      || data?.error?.message
+      || '抱歉，未能获取回复，请稍后再试。';
     thinkingBubble.classList.remove('typing');
-    // 逐字打印效果
     thinkingBubble.innerHTML = '';
     let i = 0;
     const timer = setInterval(() => {
@@ -1771,7 +1768,8 @@ async function sendAiMessage(text) {
     if (_aiHistory.length > 20) _aiHistory.splice(0, 2);
   } catch {
     thinkingBubble.classList.remove('typing');
-    thinkingBubble.textContent = '⚠️ 网络错误，请检查连接后重试。';
+    thinkingBubble.classList.remove('typing');
+    thinkingBubble.textContent = '⚠️ 请求失败。\n可能原因：浏览器跨域限制（CORS）暂不支持直连千问API。\n建议：将此问题截图发给管理员，由管理员解答。';
   } finally {
     _aiThinking = false;
     document.getElementById('aiSendBtn').disabled = false;
