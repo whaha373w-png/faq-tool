@@ -9,13 +9,22 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
+    html { height: 100%; overflow: hidden; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
       background: #f8f9fb;
       color: #191c1e;
       font-size: 15px;
       line-height: 1.6;
-      min-height: 100vh;
+      height: 100%;
+      overflow: hidden;
+    }
+    #pageScroll {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: auto;
       padding-bottom: 88px;
     }
 
@@ -795,12 +804,16 @@
 
     .ai-messages {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
+      overflow-x: hidden;
       padding: 16px 12px 12px;
       display: flex;
       flex-direction: column;
       gap: 12px;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      touch-action: pan-y;
     }
 
     .ai-bubble-row {
@@ -909,6 +922,7 @@
 </head>
 <body>
 
+<div id="pageScroll">
 <!-- ===== HEADER ===== -->
 <div class="header">
   <div class="header-inner">
@@ -954,6 +968,7 @@
     </div>
   </div>
 </div>
+</div><!-- /#pageScroll -->
 
 <!-- ===== LIGHTBOX ===== -->
 <div class="lightbox" id="lightbox">
@@ -1634,7 +1649,7 @@ function navHome() {
   clearSearch();
   document.getElementById('navHome').classList.add('active');
   document.getElementById('navAi').classList.remove('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('pageScroll').scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ── AI 对话页 ────────────────────────────────────────────────────
