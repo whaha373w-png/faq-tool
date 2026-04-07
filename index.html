@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>售后问题解答</title>
+  <title>产品问题解答</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -928,7 +928,7 @@
   <div class="header-inner">
     <div class="header-titlebar">
       <span class="header-icon">🔧</span>
-      <span class="header-title">售后问题解答</span>
+      <span class="header-title">机器问题解答</span>
     </div>
     <div class="search-section">
       <div class="search-bar">
@@ -1091,12 +1091,11 @@ const WXPUSHER_UID   = 'UID_LNwIqGYlXslkhP3EmBq14u24ufSd';
 // ================================================================
 
 // ================================================================
-// 【AI 问答配置 — 千问 API Key】
-// ❗ 注意：Key 会包含在页面源码中，仅适合内部人员使用的工具，请勿公开分享给陷生人。
-// 如发现 Key 泛用，可到阿里云控制台 → 访问控制 → 禁用此 Key。
+// 【AI 问答配置 — Cloudflare Worker 代理地址】
+// Key 存储在 Cloudflare 环境变量中，不写在代码里，可以安全推送到 Git。
+// 将 worker.js 部署到 Cloudflare 后，把 Worker 访问地址填到下方。
 //
-const QWEN_API_KEY = 'sk-ee96bc216581423e918cbb2f12d4b712';
-const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+const WORKER_URL = 'https://morning-bird-f22c.whaha373w.workers.dev';
 // ================================================================
 
 const FORM_ACTION = FORMSPREE_ID !== 'YOUR_FORM_ID'
@@ -1807,11 +1806,10 @@ async function sendAiMessage(text) {
   const thinkingBubble = appendAiBubble('bot', '…');
 
   try {
-    const res = await fetch(QWEN_API_URL, {
+    const res = await fetch(WORKER_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${QWEN_API_KEY}`
       },
       body: JSON.stringify({
         model: 'qwen-turbo',
